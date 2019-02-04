@@ -1,111 +1,168 @@
-// #include <mbed.h>
+#include <mbed.h>
 
-// // Outputs
-// DigitalOut red_led(PTA1);
-// DigitalOut green_led(PTA2);
-// // DigitalOut VDD(PTA4);
-// // BusOut Disp(PTC6);
-// unsigned int i;
+// System Outputs
+DigitalOut red_led(PTC1);
+DigitalOut green_led(PTC2);
+BusOut display(PTE5,PTE4,PTE3,PTE2,PTB11,PTB10,PTB9,PTB8);
 
-// // Intrupts
-// InterruptIn push_button1(PTD1);
-// InterruptIn push_button2(PTD2);
-// InterruptIn push_button3(PTD3);
+// System Inputs
+DigitalIn push_button1(PTD1);
+DigitalIn push_button2(PTD2);
+DigitalIn push_button3(PTD3);
 
-// bool but1_presed = false;
-// bool but2_presed = false;
-// bool but3_presed = false;
+// Button Flags
+bool but1_pressed = false;
+bool but2_pressed = false;
+bool but3_pressed = false;
 
-// bool task3_running = false;
-// bool task4_running = false;
-// bool task5_running = false;
+// Task Counters
+int task3_counter = 0;
+int task4_counter = 0;
 
+void scheduler();
+void check_flags() {
+    if(push_button1 == 0) {
+      but1_pressed = true;
+    }
+    if(push_button2 == 0) {
+      but2_pressed = true;
+    }
+    if(push_button3 == 0) {
+      but3_pressed = true;
+    }
+}
 
-// void delay(void) {
-//   // for(volatile unsigned int x=0;x<3500000;x=x+1);
-//   return;
-// }
+// Tasks
+void task3(){
+  if(task3_counter >= 10) {
+    task3_counter = 0;
+    red_led = 0;
+    green_led = 0;
+    but1_pressed = false;
+    scheduler();
+    return;
+  }
+  if(task3_counter <= 5) {
+    red_led = 1;
+    green_led = 0;
+    wait(0.2);
+  } else {
+    red_led = 0;
+    green_led = 1; 
+    wait(0.2);
+  }
+  task3_counter++;
+  scheduler();
+}
 
-// void scheduler();
+void task4(){
+  if(task4_counter >= 10) {
+    task4_counter = 0;
+    green_led = 0;
+    red_led = 0;
+    but2_pressed = false;
+    scheduler();
+    return;
+  }
+  green_led = 1;
+  red_led = 1;
+  wait(0.2);
+  task4_counter++;
+  scheduler();
+}
 
-// void task3(){
-//     task3_running = true;
-//     red_led = 1;
-//     green_led = 0; 
-//     wait(2);
-//     red_led = 0;
-//     green_led = 1; 
-//     wait(2);
-//     task3_running = false;
-//     scheduler();
-// }
+void task5(){
+  int i = 0;
+  while(i < 10) {
+    display=0xBF;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+  while(i < 10) {
+    display=0x86;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+  while(i < 10) {
+    display=0xDB;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+ while(i < 10) {
+    display=0xCF;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+ while(i < 10) {
+    display=0xE6;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+  while(i < 10) {
+    display=0xED;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+  while(i < 10) {
+    display=0xFD;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+ while(i < 10) {
+    display=0x87;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+while(i < 10) {
+    display=0xFF;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+while(i < 10) {
+    display=0xEF;
+    wait(0.1);
+    i++;
+    check_flags();
+  }
+  i = 0;
+    but3_pressed = false;
+    // display=0xBF;
+    scheduler();
+}
 
-// void task4(){
-//   task4_running = true;
-//   green_led = 1; 
-//   red_led = 1;
-//   wait(2);
-//   green_led = 0; 
-//   red_led = 0;
-//   wait(2);
-//   task4_running = false;
-//   scheduler();
-// }
+void scheduler() {
+  check_flags();
+  if (but3_pressed) {
+    red_led = 0;
+    green_led = 0;
+    task5();
+  } else if (but2_pressed) {
+    task4();
+  } else if (but1_pressed) {
+    task3();
+  }
+}
 
-// void task5(){
-//   task5_running = true;
-//   red_led = 1;
-//   task5_running = false;
-//   scheduler();
-// }
-// // Intrrupt Service Routines
-// void isr1() {
-//     but1_presed = true; 
-//     but2_presed = false;
-//     but3_presed = false;
-//     scheduler();
-// }
-// void isr2() {
-//     but2_presed = true; 
-//     but1_presed = false;
-//     but3_presed = false;
-//     scheduler();
-// }
-// void isr3() {
-//     but3_presed = true; 
-//     but2_presed = false;
-//     but1_presed = false;
-//     scheduler();
-// }
-
-// void scheduler() {
-//   if (but3_presed) {
-//         but3_presed = false;
-//         task5();
-//         red_led = 0;
-//         green_led = 0;
-//         // wait(2);
-//   } else if (but2_presed) {
-//         but2_presed = false;
-//         task4();
-//         red_led = 0;    
-//         green_led = 0;
-//         // wait(2);
-//   } else if (but1_presed) {
-//         but1_presed = false;
-//         task3();
-//         red_led = 0;
-//         green_led = 0;
-//         // wait(2);
-//   }
-// }
-// int main() {
-
-//   push_button1.rise(&isr1);
-//   push_button2.rise(&isr2);
-//   push_button3.rise(&isr3);
-  
-//   while(1) {
-//     scheduler();
-//   }
-// }
+int main() {
+  while(1) {
+    scheduler();
+  }
+}
